@@ -1,0 +1,166 @@
+{
+  "super-mario": {
+    "title": "Super Mario Bros",
+    "description": "A classic platformer where Mario saves Princess Peach.",
+    "coverImage": "https://upload.wikimedia.org/wikipedia/en/0/03/Super_Mario_Bros._box.png",
+    "system": "NES",
+    "year": "1985",
+    "genre": "Platformer",
+    "playingCount": "1.2k",
+    "rating": 4.8,
+    "viewCount": "245k",
+    "fullDescription": "Super Mario Bros is a landmark platformer where Mario navigates the Mushroom Kingdom to rescue Princess Peach from Bowser.",
+    "releaseDate": "September 13, 1985",
+    "developer": "Nintendo",
+    "publisher": "Nintendo",
+    "players": "1-2 Players",
+    "stats": {
+      "popularity": "85%",
+      "difficulty": "60%",
+      "replayValue": "75%",
+      "overallScore": "90%"
+    },
+    "gameplayDescription": "Run, jump, and collect power-ups to defeat enemies and reach the castle in each level.",
+    "tips": [
+      "Collect coins for extra lives",
+      "Use mushrooms to grow bigger",
+      "Fire flowers grant fireballs"
+    ],
+    "achievements": [
+      {
+        "name": "World Champion",
+        "description": "Complete the game on hard difficulty",
+        "unlocked": "12%"
+      }
+    ],
+    "screenshots": [
+      "/api/placeholder/400/300"
+    ],
+    "controls": [
+      {
+        "action": "Move",
+        "keyboard": "← → ↑ ↓",
+        "gamepad": "D-Pad / Left Stick"
+      }
+    ],
+    "comments": [
+      {
+        "user": "RetroGamer92",
+        "posted": "3 days ago",
+        "rating": 5,
+        "text": "This game defined my childhood! The controls are still perfect.",
+        "likes": 32,
+        "dislikes": 2
+      }
+    ]
+  },
+  "pokemon-ruby": {
+    "title": "Pokémon Ruby",
+    "description": "Embark on a journey in the Hoenn region to catch Pokémon, battle Gym Leaders, and stop Team Magma's sinister plans.",
+    "coverImage": "https://images.launchbox-app.com/r2_d314b297-0633-4f0d-8dcd-53d84a559fac.jpg",
+    "system": "Game Boy Advance",
+    "year": "2003",
+    "genre": "RPG",
+    "playingCount": "850",
+    "rating": 4.7,
+    "viewCount": "1.2M",
+    "fullDescription": "Pokémon Ruby, released in 2003 for the Game Boy Advance, is a third-generation Pokémon game set in the tropical Hoenn region. As a young trainer, you choose from Treecko, Torchic, or Mudkip and aim to become the Pokémon Champion by defeating eight Gym Leaders and the Elite Four. Along the way, you thwart Team Magma's plan to awaken Groudon and expand the landmass. With over 200 Pokémon, including 135 new species, the game introduces abilities, double battles, and Pokémon Contests, offering a rich RPG experience.",
+    "releaseDate": "March 19, 2003",
+    "developer": "Game Freak",
+    "publisher": "Nintendo, The Pokémon Company",
+    "players": "1-4 Players (via link cable)",
+    "stats": {
+      "popularity": "90%",
+      "difficulty": "55%",
+      "replayValue": "80%",
+      "overallScore": "88%"
+    },
+    "gameplayDescription": "Travel across Hoenn’s diverse landscapes, capturing Pokémon with Poké Balls and battling trainers. Train your team to master moves and abilities, compete in Pokémon Contests to showcase Cool, Beauty, or Smart attributes, and engage in double battles for strategic depth. Use the PokéNav to track progress and rematch trainers. Multiplayer features allow trading and battling with up to four players via Game Boy Advance link cables.",
+    "tips": [
+      "Choose Mudkip for an easier early game due to its advantage against Rock-type Gym Leader Roxanne.",
+      "Plant berries to grow trees for PokéBlocks, which boost Contest stats.",
+      "Use the Mach Bike to navigate tricky terrain like crumbling floors in caves.",
+      "Trade with Pokémon Sapphire to catch version-exclusive Pokémon like Lotad and Seedot."
+    ],
+    "achievements": [
+      {
+        "name": "Champion of Hoenn",
+        "description": "Defeat the Elite Four and Champion Steven",
+        "unlocked": "15%"
+      },
+      {
+        "name": "Master Collector",
+        "description": "Complete the Hoenn Pokédex with 202 Pokémon",
+        "unlocked": "8%"
+      },
+      {
+        "name": "Contest Star",
+        "description": "Win a Master Rank Pokémon Contest",
+        "unlocked": "10%"
+      },
+      {
+        "name": "Magma Buster",
+        "description": "Stop Team Magma at Mt. Chimney",
+        "unlocked": "25%"
+      }
+    ],
+    "screenshots": [
+      "https://images.launchbox-app.com/7b8101cd-ea45-4189-b9e6-45e170aa42dc.png",
+      "https://www.pokemon.com/static-assets/content-assets/cms2/img/video-games/_tiles/pokemon-ruby-sapphire/02.jpg",
+      "https://www.pokemon.com/static-assets/content-assets/cms2/img/video-games/_tiles/pokemon-ruby-sapphire/03.jpg"
+    ],
+    "controls": [
+      {
+        "action": "Move Character",
+        "keyboard": "D-Pad",
+        "gamepad": "D-Pad"
+      },
+      {
+        "action": "Interact/Confirm",
+        "keyboard": "A",
+        "gamepad": "A Button"
+      },
+      {
+        "action": "Cancel/Menu",
+        "keyboard": "B",
+        "gamepad": "B Button"
+      },
+      {
+        "action": "Open Menu",
+        "keyboard": "Start",
+        "gamepad": "Start Button"
+      },
+      {
+        "action": "Cycle Items",
+        "keyboard": "L R",
+        "gamepad": "L/R Buttons"
+      }
+    ],
+    "comments": [
+      {
+        "user": "HoennTrainer",
+        "posted": "1 week ago",
+        "rating": 5,
+        "text": "Pokémon Ruby is a classic! The Hoenn region feels so vibrant, and double battles add such a fun twist. Mudkip is the best starter!",
+        "likes": 45,
+        "dislikes": 3
+      },
+      {
+        "user": "PokeFan2003",
+        "posted": "2 days ago",
+        "rating": 4,
+        "text": "Love the Pokémon Contests, but the water routes can feel a bit much. Still, the music and story are top-notch.",
+        "likes": 28,
+        "dislikes": 5
+      },
+      {
+        "user": "RetroGamerX",
+        "posted": "3 hours ago",
+        "rating": 5,
+        "text": "Replaying this on my GBA brings back so many memories. The PokéNav is such a cool feature!",
+        "likes": 12,
+        "dislikes": 0
+      }
+    ]
+  }
+}
