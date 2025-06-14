@@ -2,24 +2,24 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth, db } from '../../firebase/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { collection, getDocs, doc, setDoc, deleteDoc, getDoc, updateDoc } from 'firebase/firestore';
 import Navbar from '../../../components/Navbar';
 import { useThemeAwareLoader } from '../hooks/useThemeAwareLoader';
 
 export default function AdminPortal() {
   const { isLoading, progress, loadingTitle, loadingText, onDataLoad } = useThemeAwareLoader();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
-  const [users, setUsers] = useState([]);
-  const [games, setGames] = useState([]);
-  const [consoles, setConsoles] = useState([]);
-  const [discussions, setDiscussions] = useState([]);
-  const [error, setError] = useState(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [games, setGames] = useState<any[]>([]);
+  const [consoles, setConsoles] = useState<any[]>([]);
+  const [discussions, setDiscussions] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [theme, setTheme] = useState('dark');
-  const [selectedGame, setSelectedGame] = useState(null);
-  const [selectedConsole, setSelectedConsole] = useState(null);
+  const [selectedGame, setSelectedGame] = useState<any>(null);
+  const [selectedConsole, setSelectedConsole] = useState<any>(null);
   const [gameFormData, setGameFormData] = useState({
     title: '',
     system: '',
@@ -95,7 +95,7 @@ export default function AdminPortal() {
     }
   };
 
-  const handleBanUser = async (userId) => {
+  const handleBanUser = async (userId: string) => {
     try {
       await setDoc(doc(db, 'users', userId), { banned: true }, { merge: true });
       setUsers(users.map((u) => (u.id === userId ? { ...u, banned: true } : u)));
@@ -106,7 +106,7 @@ export default function AdminPortal() {
     }
   };
 
-  const handleToggleAdmin = async (userId, currentAdminStatus) => {
+  const handleToggleAdmin = async (userId: string, currentAdminStatus: boolean) => {
     try {
       if (!isAdmin) {
         alert('You do not have permission to perform this action.');
@@ -121,7 +121,7 @@ export default function AdminPortal() {
     }
   };
 
-  const handleDeleteGame = async (gameId) => {
+  const handleDeleteGame = async (gameId: string) => {
     try {
       const game = games.find((g) => g.id === gameId);
       if (game && game.consoleId) {
@@ -140,7 +140,7 @@ export default function AdminPortal() {
     }
   };
 
-  const handleDeleteConsole = async (consoleId) => {
+  const handleDeleteConsole = async (consoleId: string) => {
     try {
       await setDoc(doc(db, 'consoles', consoleId), { deleted: true }, { merge: true });
       setConsoles(consoles.filter((c) => c.id !== consoleId));
@@ -151,7 +151,7 @@ export default function AdminPortal() {
     }
   };
 
-  const handleDeleteDiscussion = async (discussionId) => {
+  const handleDeleteDiscussion = async (discussionId: string) => {
     try {
       await deleteDoc(doc(db, 'discussions', discussionId));
       setDiscussions(discussions.filter((d) => d.id !== discussionId));
@@ -172,7 +172,7 @@ export default function AdminPortal() {
     }
   };
 
-  const handleSaveGame = async (e) => {
+  const handleSaveGame = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (!gameFormData.title || !gameFormData.system || !gameFormData.consoleId || !gameFormData.releaseDate || !gameFormData.genre || !gameFormData.developer || !gameFormData.publisher) {
@@ -244,7 +244,7 @@ export default function AdminPortal() {
     }
   };
 
-  const handleSaveConsole = async (e) => {
+  const handleSaveConsole = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (!consoleFormData.name || !consoleFormData.shortName || !consoleFormData.manufacturer || !consoleFormData.releaseDate || !consoleFormData.generation) {
@@ -255,7 +255,7 @@ export default function AdminPortal() {
       const consoleData = {
         name: consoleFormData.name,
         shortName: consoleFormData.shortName,
-        gamesCount: parseInt(consoleFormData.gamesCount) || 0,
+        gamesCount: parseInt(consoleFormData.gamesCount.toString()) || 0,
         manufacturer: consoleFormData.manufacturer,
         releaseDate: consoleFormData.releaseDate,
         generation: consoleFormData.generation,
@@ -289,7 +289,7 @@ export default function AdminPortal() {
     }
   };
 
-  const handleEditGame = (game) => {
+  const handleEditGame = (game: any) => {
     setSelectedGame(game);
     setGameFormData({
       title: game.title,
@@ -313,7 +313,7 @@ export default function AdminPortal() {
     });
   };
 
-  const handleEditConsole = (console) => {
+  const handleEditConsole = (console: any) => {
     setSelectedConsole(console);
     setConsoleFormData({
       name: console.name || '',
@@ -691,7 +691,7 @@ export default function AdminPortal() {
                     {games.map((g) => {
                       const consoleName = consoles.find((c) => c.id === g.consoleId)?.name || 'N/A';
                       const relatedTitles = g.relatedGames
-                        ?.map((id) => games.find((game) => game.id === id)?.title || 'N/A')
+                        ?.map((id: string) => games.find((game) => game.id === id)?.title || 'N/A')
                         .join(', ') || 'None';
                       return (
                         <tr key={g.id}>
@@ -901,7 +901,7 @@ export default function AdminPortal() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((d) => (
+                    {discussions.map((d) => (
                       <tr key={d.id}>
                         <td>{d.title}</td>
                         <td>{d.author}</td>

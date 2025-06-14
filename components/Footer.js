@@ -16,7 +16,7 @@ export default function Footer() {
               style={{ objectFit: 'contain' }}
             />
             <p className="text-muted">
-              The ultimate retro gaming community since 2005. Play games, join discussions, and connect with fellow gamers.
+              The ultimate retro gaming community. Play games, join discussions, and connect with fellow gamers.
             </p>
             <div className="d-flex gap-3">
               <a href="https://facebook.com/retromz" className="nav-link" aria-label="Facebook">

@@ -2,8 +2,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { auth } from '../src//firebase/firebase'; // Adjust the path if needed
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '../src/firebase/firebase'; // Adjust the path if needed
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 
 export default function Navbar() {
   const [theme, setTheme] = useState('dark');
@@ -125,7 +125,8 @@ export default function Navbar() {
               <input
                 type="search"
                 placeholder="Search"
-                className="form-control form-control-sm bg-dark border-secondary form-search me-2"
+                className="form-control form-control-sm bg-dark border-secondary form-search me-3"
+		style={{ width: user ? '450px' : '260px' }}
               />
               <button className="btn btn-sm btn-outline-primary btn-search">
                 <i className="fas fa-search"></i>

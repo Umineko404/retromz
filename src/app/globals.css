@@ -405,7 +405,7 @@ p, .lead, li, a:not(.nav-link), .text-muted {
 .game-card {
   transform-style: preserve-3d;
   transition: transform 0.5s ease, box-shadow 0.5s ease;
-  min-height: 414px;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -1031,5 +1031,3 @@ p, .lead, li, a:not(.nav-link), .text-muted {
     margin: 20px 0; 
   }
 }
-
-

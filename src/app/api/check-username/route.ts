@@ -1,6 +1,6 @@
 // src/app/api/check-username/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../firebase/firebase'; // Use your existing client config
+import { db } from '../../../firebase/server'; // Use your existing client config
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 interface RequestBody {
