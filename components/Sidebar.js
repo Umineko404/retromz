@@ -1,305 +1,178 @@
 'use client';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { auth, db } from '../src/firebase/firebase';
+import { useState, useEffect, useRef } from 'react';
+import { Client } from 'irc-framework';
+import { auth } from '../src/firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getDocs, collection, query, where, Timestamp } from 'firebase/firestore';
 
-export default function Sidebar({ showRelatedGames = false, relatedGames = [] }) {
-  const [activeTab, setActiveTab] = useState('login');
+export default function Sidebar() {
   const [user, setUser] = useState(null);
-  const [stats, setStats] = useState({
-    members: 0,
-    games: 0,
-    posts: 0,
-    online: 0,
-  });
-  const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
+  const [channel, setChannel] = useState('#grokchat');
+  const [nickname, setNickname] = useState('');
+  const clientRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
-  const fetchCommunityStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Fetch total users
-      let membersCount = 0;
-      try {
-        const usersSnapshot = await getDocs(collection(db, 'users'));
-        membersCount = usersSnapshot.size;
-      } catch (err) {
-        console.warn('Failed to fetch users count:', err);
-        if (err.code === 'permission-denied') {
-          setError((prev) => prev || 'Members count unavailable (requires authentication)');
-        } else {
-          setError((prev) => prev || 'Unable to load members count');
-        }
-      }
-
-      // Fetch total games
-      let gamesCount = 0;
-      try {
-        const gamesSnapshot = await getDocs(collection(db, 'games'));
-        gamesCount = gamesSnapshot.size;
-      } catch (err) {
-        console.warn('Failed to fetch games count:', err);
-        setError((prev) => prev || 'Unable to load games count');
-      }
-
-      // Fetch total posts
-      let postsCount = 0;
-      if (auth.currentUser) { // Only try if authenticated
-        try {
-          const postsSnapshot = await getDocs(collection(db, 'discussions'));
-          postsCount = postsSnapshot.size;
-        } catch (err) {
-          console.warn('Failed to fetch posts count:', err);
-          setError((prev) => prev || 'Unable to load posts count');
-        }
-      } else {
-        setError((prev) => prev || 'Posts count unavailable (requires authentication)');
-      }
-
-      // Fetch online users (with fallback)
-      let onlineCount = 0;
-      if (auth.currentUser) { // Only try if authenticated
-        try {
-          const fiveMinutesAgo = Timestamp.fromDate(new Date(Date.now() - 5 * 60 * 1000));
-          const onlineQuery = query(
-            collection(db, 'users'),
-            where('lastActive', '>=', fiveMinutesAgo)
-          );
-          const onlineSnapshot = await getDocs(onlineQuery);
-          onlineCount = onlineSnapshot.size;
-        } catch (err) {
-          console.warn('Failed to fetch online users count:', err);
-          onlineCount = Math.floor(Math.random() * 100) + 50; // Fallback: 50-150
-          setError((prev) => prev || 'Online users count unavailable; showing estimate');
-        }
-      } else {
-        onlineCount = Math.floor(Math.random() * 100) + 50; // Fallback: 50-150
-        setError((prev) => prev || 'Online users count unavailable (requires authentication)');
-      }
-
-      setStats({
-        members: membersCount,
-        games: gamesCount,
-        posts: postsCount,
-        online: onlineCount,
-      });
-    } catch (err) {
-      console.error('Unexpected error fetching community stats:', err);
-      setError('Failed to load community stats');
-    } finally {
-      setLoading(false);
-    }
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
+    // Monitor Firebase auth state
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        setNickname(currentUser.displayName || currentUser.email.split('@')[0]);
+      } else {
+        setNickname(`Guest${Math.floor(Math.random() * 10000)}`);
+      }
     });
 
-    fetchCommunityStats();
+    // Initialize IRC client
+    clientRef.current = new Client();
 
-    return () => unsubscribe();
-  }, []);
+    clientRef.current.on('connected', () => {
+      setIsConnected(true);
+      setError(null);
+      clientRef.current.join(channel);
+      addMessage('System', 'Connected to IRC server!');
+    });
+
+    clientRef.current.on('message', (event) => {
+      if (event.type === 'privmsg' && event.target === channel) {
+        addMessage(event.nick, event.message);
+      }
+    });
+
+    clientRef.current.on('error', (err) => {
+      setError(`IRC Error: ${err.message}`);
+      setIsConnected(false);
+    });
+
+    // Clean up on unmount
+    return () => {
+      unsubscribe();
+      if (clientRef.current) {
+        clientRef.current.quit();
+      }
+    };
+  }, [channel]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const addMessage = (nick, message) => {
+    setMessages((prev) => [
+      ...prev,
+      { nick, message, timestamp: new Date().toLocaleTimeString() },
+    ]);
+  };
+
+  const connectToIRC = () => {
+    if (!isConnected && clientRef.current) {
+      try {
+        clientRef.current.connect({
+          host: 'irc.libera.chat',
+          port: 6667,
+          nick: nickname,
+          username: nickname,
+          version: 'Grok IRC Client',
+        });
+      } catch (err) {
+        setError(`Connection failed: ${err.message}`);
+      }
+    }
+  };
+
+  const sendMessage = (e) => {
+    e.preventDefault();
+    if (inputMessage.trim() && isConnected && clientRef.current) {
+      clientRef.current.say(channel, inputMessage);
+      addMessage(nickname, inputMessage);
+      setInputMessage('');
+    }
+  };
 
   return (
     <div className="col-lg-3">
-      {/* Community Stats */}
       <div className="card mb-3">
         <div className="card-header d-flex justify-content-between align-items-center">
-          <span>Community Stats</span>
-          <i
-            className="fas fa-sync-alt icon-glow"
-            style={{ cursor: 'pointer' }}
-            title="Refresh stats"
-            onClick={() => {
-              setLoading(true);
-              fetchCommunityStats();
-            }}
-          ></i>
-        </div>
-        <div className="card-body p-2">
-          {loading ? (
-            <div className="text-center">
-              <i className="fas fa-spinner fa-spin me-2"></i>Loading stats...
-            </div>
-          ) : error ? (
-            <div className="text-danger small text-center">
-              {error}
-              <button className="btn btn-sm btn-primary ms-2" onClick={fetchCommunityStats}>
-                Retry
-              </button>
-            </div>
+          <span>IRC Chat ({channel})</span>
+          {isConnected ? (
+            <span className="text-success small">Connected</span>
           ) : (
-            <div className="game-stat p-3 rounded">
-              <div className="d-flex justify-content-between mb-1 small">
-                <span><i className="fas fa-users me-1 icon-glow"></i>Members:</span>
-                <span className="fw-bold">{stats.members.toLocaleString()}</span>
-              </div>
-              <div className="d-flex justify-content-between mb-1 small">
-                <span><i className="fas fa-gamepad me-1 icon-glow"></i>Games:</span>
-                <span className="fw-bold">{stats.games.toLocaleString()}</span>
-              </div>
-              <div className="d-flex justify-content-between mb-1 small">
-                <span><i className="fas fa-comment me-1 icon-glow"></i>Posts:</span>
-                <span className="fw-bold">{stats.posts.toLocaleString()}</span>
-              </div>
-              <div className="d-flex justify-content-between small">
-                <span><i className="fas fa-user me-1 icon-glow"></i>Online:</span>
-                <span className="text-light-custom fw-bold">{stats.online.toLocaleString()}</span>
-              </div>
-            </div>
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={connectToIRC}
+              disabled={isConnected}
+            >
+              Connect
+            </button>
           )}
         </div>
-      </div>
-
-      {/* User-Specific Section or Login/Register Tabs */}
-      <div className="card mb-3">
-        {user ? (
-          <>
-            <div className="card-header">
-              <span>Welcome, {user.displayName || user.email}!</span>
-            </div>
-            <div className="card-body p-3">
-              <div className="d-flex flex-column gap-2">
-                <Link href="/profile" className="btn btn-primary btn-sm">
-                  <i className="fas fa-user me-2 icon-glow"></i>View Profile
-                </Link>
-                <Link href="/recent-activity" className="btn btn-outline-primary btn-sm">
-                  <i className="fas fa-history me-2 icon-glow"></i>Recent Activity
-                </Link>
-                <Link href="/favorites" className="btn btn-outline-primary btn-sm">
-                  <i className="fas fa-heart me-2 icon-glow"></i>Favorites
-                </Link>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="card-header p-0">
-              <div className="nav-tabs d-flex">
-                <button
-                  className={`nav-tab flex-fill text-center ${activeTab === 'login' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('login')}
-                >
-                  Login
-                </button>
-                <button
-                  className={`nav-tab flex-fill text-center ${activeTab === 'register' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('register')}
-                >
-                  Register
-                </button>
-              </div>
-            </div>
-            <div className="card-body p-3">
-              {activeTab === 'login' ? (
-                <div>
-                  <div className="mb-2">
-                    <div className="input-group input-group-sm">
-                      <span className="input-group-text bg-dark border-secondary">
-                        <i className="fas fa-user"></i>
-                      </span>
-                      <input
-                        type="text"
-                        placeholder="Username"
-                        className="form-control form-control-sm bg-dark border-secondary"
-                      />
-                    </div>
-                  </div>
-                  <div className="mb-2">
-                    <div className="input-group input-group-sm">
-                      <span className="input-group-text bg-dark border-secondary">
-                        <i className="fas fa-lock"></i>
-                      </span>
-                      <input
-                        type="password"
-                        placeholder="Password"
-                        className="form-control form-control-sm bg-dark border-secondary"
-                      />
-                    </div>
-                  </div>
-                  <div className="d-flex justify-content-between align-items-center">
-                    <label className="d-flex align-items-center text-muted">
-                      <input type="checkbox" className="me-2" />
-                      Remember
-                    </label>
-                    <button className="btn btn-primary btn-sm">Login</button>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div className="mb-2">
-                    <input type="text" placeholder="Username" className="form-control form-control-sm bg-dark border-secondary" />
-                  </div>
-                  <div className="mb-2">
-                    <input type="email" placeholder="Email" className="form-control form-control-sm bg-dark border-secondary" />
-                  </div>
-                  <div className="mb-2">
-                    <input type="password" placeholder="Password" className="form-control form-control-sm bg-dark border-secondary" />
-                  </div>
-                  <button className="btn btn-secondary btn-sm w-100">Create Account</button>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Quick Links */}
-      <div className="card mb-3">
-        <div className="card-header">
-          <i className="fas fa-link me-2 icon-glow"></i>Quick Links
-        </div>
-        <div>
-          <Link href="/leaderboards" className="nav-link d-block p-3 border-bottom">
-            <i className="fas fa-trophy me-2 text-primary-custom icon-glow"></i>Leaderboards
-          </Link>
-          <Link href="/rom-hacks" className="nav-link d-block p-3 border-bottom">
-            <i className="fas fa-download me-2 text-primary-custom icon-glow"></i>ROM Hacks
-          </Link>
-          <Link href="/streamers" className="nav-link d-block p-3 border-bottom">
-            <i className="fas fa-microphone me-2 text-primary-custom icon-glow"></i>Streamers
-          </Link>
-          <Link href="/music" className="nav-link d-block p-3">
-            <i className="fas fa-headphones me-2 text-primary-custom icon-glow"></i>Game Music
-          </Link>
-        </div>
-      </div>
-
-      {/* Related Games (Optional) */}
-      {showRelatedGames && (
-        <div className="card mb-3">
-          <div className="card-header">
-            <i className="fas fa-gamepad me-2 icon-glow"></i>Related Games
-          </div>
-          <div className="card-body p-0">
-            {relatedGames.map((related, index) => (
-              <div
-                key={index}
-                className={`d-flex align-items-center p-3 ${index < relatedGames.length - 1 ? 'border-bottom' : ''}`}
-              >
-                <Image
-                  src={related.image || '/api/placeholder/75/50'}
-                  width={75}
-                  height={50}
-                  className="me-2 rounded"
-                  style={{ objectFit: 'cover' }}
-                  alt={`${related.title} thumbnail`}
-                />
-                <div>
-                  <h6 className="mb-0">{related.title}</h6>
-                  <small className="text-muted">{related.system} | {related.genre}</small>
-                </div>
+        <div className="card-body p-3" style={{ height: '400px', display: 'flex', flexDirection: 'column' }}>
+          {error && (
+            <div className="text-danger small mb-2">{error}</div>
+          )}
+          <div
+            className="border rounded p-2 mb-2"
+            style={{ flex: 1, overflowY: 'auto', background: '#1a1a1a' }}
+          >
+            {messages.map((msg, index) => (
+              <div key={index} className="mb-1 small">
+                <span className="text-muted">[{msg.timestamp}] </span>
+                <span className="fw-bold">{msg.nick}: </span>
+                <span>{msg.message}</span>
               </div>
             ))}
+            <div ref={messagesEndRef} />
+          </div>
+          <div className="input-group input-group-sm">
+            <input
+              type="text"
+              className="form-control bg-dark border-secondary"
+              placeholder="Type a message..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              disabled={!isConnected}
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage(e)}
+            />
+            <button
+              className="btn btn-primary"
+              onClick={sendMessage}
+              disabled={!isConnected || !inputMessage.trim()}
+            >
+              Send
+            </button>
+          </div>
+          <div className="mt-2">
+            <div className="input-group input-group-sm">
+              <span className="input-group-text bg-dark border-secondary">Nick</span>
+              <input
+                type="text"
+                className="form-control bg-dark border-secondary"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                disabled={isConnected}
+              />
+            </div>
+            <div className="input-group input-group-sm mt-1">
+              <span className="input-group-text bg-dark border-secondary">Channel</span>
+              <input
+                type="text"
+                className="form-control bg-dark border-secondary"
+                value={channel}
+                onChange={(e) => setChannel(e.target.value)}
+                disabled={isConnected}
+              />
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

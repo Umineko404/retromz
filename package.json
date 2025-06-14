@@ -11,6 +11,7 @@
   "dependencies": {
     "bootstrap": "^5.3.6",
     "firebase": "^11.8.1",
+    "irc-framework": "^4.14.0",
     "next": "^15.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
