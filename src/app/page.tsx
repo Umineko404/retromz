@@ -119,7 +119,7 @@ export default function HomePage() {
               <Link href="/profile" className="btn btn-outline-secondary me-2">
                 <i className="fas fa-user me-2"></i>View Your Profile
               </Link>
-              <Link href="/forum" className="btn btn-outline-info">
+              <Link href="/forum" className="btn btn-secondary">
                 <i className="fas fa-comments me-2"></i>Visit Forum
               </Link>
             </>
@@ -264,17 +264,11 @@ export default function HomePage() {
                         <i className="fas fa-expand me-1"></i>
                         Full Screen
                       </Link>
-                      <button 
-                        className="btn btn-sm btn-primary me-2"
-                        onClick={() => setShowForumIframe(!showForumIframe)}
-                      >
-                        {showForumIframe ? 'Hide Preview' : 'Show Preview'}
-                      </button>
                     </div>
                   </div>
                   
                   {!showForumIframe && (
-                    <div className="forum-preview-small">
+                    <div className="mt-5 forum-preview-small">
                       <iframe
                         src={forumUrl}
                         width="100%"

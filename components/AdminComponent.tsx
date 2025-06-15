@@ -23,7 +23,6 @@ export default function AdminComponent() {
   const [users, setUsers] = useState<any[]>([]);
   const [games, setGames] = useState<any[]>([]);
   const [consoles, setConsoles] = useState<any[]>([]);
-  const [discussions, setDiscussions] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [theme, setTheme] = useState('dark');
   const [selectedGame, setSelectedGame] = useState<any>(null);
@@ -86,16 +85,14 @@ export default function AdminComponent() {
   const fetchData = async () => {
     try {
       await onDataLoad('Admin Portal Data');
-      const [usersSnapshot, gamesSnapshot, consolesSnapshot, discussionsSnapshot] = await Promise.all([
+      const [usersSnapshot, gamesSnapshot, consolesSnapshot] = await Promise.all([
         getDocs(collection(db, 'users')),
         getDocs(collection(db, 'games')),
         getDocs(collection(db, 'consoles')),
-        getDocs(collection(db, 'discussions')),
       ]);
       setUsers(usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
       setGames(gamesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
       setConsoles(consolesSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-      setDiscussions(discussionsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     } catch (err) {
       console.error('Error fetching data:', err);
       setError('Failed to load data.');
@@ -155,17 +152,6 @@ export default function AdminComponent() {
     } catch (err) {
       console.error('Error deleting console:', err);
       alert('Failed to delete console.');
-    }
-  };
-
-  const handleDeleteDiscussion = async (discussionId: string) => {
-    try {
-      await deleteDoc(doc(db, 'discussions', discussionId));
-      setDiscussions(discussions.filter((d) => d.id !== discussionId));
-      alert('Discussion deleted successfully.');
-    } catch (err) {
-      console.error('Error deleting discussion:', err);
-      alert('Failed to delete discussion.');
     }
   };
 
@@ -386,7 +372,7 @@ export default function AdminComponent() {
         </div>
 
         <div className="nav-tabs d-flex border-bottom mb-4">
-          {['users', 'games', 'consoles', 'discussions', 'analytics'].map((tab) => (
+          {['users', 'games', 'consoles', 'analytics'].map((tab) => (
             <button
               key={tab}
               className={`nav-tab flex-fill text-center ${activeTab === tab ? 'active' : ''}`}
@@ -809,43 +795,6 @@ export default function AdminComponent() {
             </div>
           )}
 
-          {activeTab === 'discussions' && (
-            <div className="card">
-              <div className="card-header">
-                <i className="fas fa-comments me-2"></i>Manage Discussions
-              </div>
-              <div className="card-body">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Title</th>
-                      <th>Author</th>
-                      <th>Replies</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {discussions.map((d) => (
-                      <tr key={d.id}>
-                        <td>{d.title}</td>
-                        <td>{d.author}</td>
-                        <td>{d.replies}</td>
-                        <td>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleDeleteDiscussion(d.id)}
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
           {activeTab === 'analytics' && (
             <div className="card">
               <div className="card-header">
@@ -874,14 +823,6 @@ export default function AdminComponent() {
                       <div className="card-body text-center">
                         <h5>Total Consoles</h5>
                         <p>{consoles.length}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-4">
-                    <div className="card">
-                      <div className="card-body text-center">
-                        <h5>Total Discussions</h5>
-                        <p>{discussions.length}</p>
                       </div>
                     </div>
                   </div>
