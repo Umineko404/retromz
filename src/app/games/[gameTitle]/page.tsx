@@ -15,18 +15,59 @@ import { useThemeAwareLoader } from '../../hooks/useThemeAwareLoader';
 interface Game {
   id: string;
   title: string;
-  console: string;
   system: string;
-  release_year: number;
+  releaseDate: string;
   description?: string;
   gameUrl?: string;
   screenshots?: string[];
   controls?: string;
-  coverImageUrl?: string; // Updated to match Firestore
+  coverImageUrl?: string;
   genre?: string;
   rating?: number;
   viewCount?: number;
+  developer?: string;
+  publisher?: string;
 }
+
+// Helper function to map system codes to display names
+const getSystemDisplayName = (systemCode: string): string => {
+  const systemMap: { [key: string]: string } = {
+    'GEN': 'Sega Genesis',
+    'SNES': 'Super Nintendo',
+    'NES': 'Nintendo Entertainment System',
+    'GB': 'Game Boy',
+    'GBC': 'Game Boy Color',
+    'GBA': 'Game Boy Advance',
+    'N64': 'Nintendo 64',
+    'PS1': 'PlayStation',
+    'PS2': 'PlayStation 2',
+    'DC': 'Dreamcast',
+    'SMS': 'Sega Master System',
+    'GG': 'Game Gear',
+    'ATARI': 'Atari 2600',
+    'MD': 'Sega Mega Drive',
+    'PCE': 'PC Engine',
+    'NEOGEO': 'Neo Geo',
+  };
+  
+  return systemMap[systemCode] || systemCode;
+};
+
+// Helper function to format release date
+const formatReleaseDate = (dateString: string): string => {
+  if (!dateString) return 'N/A';
+  
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  } catch (error) {
+    return dateString;
+  }
+};
 
 const GameDetails = () => {
   const { isLoading, progress, loadingTitle, loadingText, onDataLoad } = useThemeAwareLoader();
@@ -99,6 +140,9 @@ const GameDetails = () => {
 
         const gameId = gameDoc.id;
         const data: Game = { id: gameId, ...gameDoc.data() } as Game;
+        
+        console.log('Fetched game data:', data);
+        
         setGame(data);
 
         const auth = getAuth();
@@ -185,11 +229,11 @@ const GameDetails = () => {
               <h1 className="text-glitch">{game.title}</h1>
               <div className="d-flex flex-wrap mb-3 gap-2">
                 <div className="me-3 mb-2">
-                  <span className="badge bg-primary me-2">{game.console}</span>
-                  <span className="badge bg-secondary">{game.release_year}</span>
+                  <span className="badge bg-primary me-2">{getSystemDisplayName(game.system || 'Unknown')}</span>
+                  <span className="badge bg-secondary">{formatReleaseDate(game.releaseDate || '')}</span>
                 </div>
                 <div className="d-flex gap-3">
-                  {game.rating && (
+                  {game.rating && game.rating > 0 && (
                     <span>
                       {generateStarRating(game.rating)} ({game.rating}/5)
                     </span>
@@ -247,46 +291,44 @@ const GameDetails = () => {
                     <div className="card-body">
                       <p>{game.description || 'No description available.'}</p>
                       <h5 className="mt-4">Game Details</h5>
-                      <div className="d-flex flex-wrap gap-4">
-                        <table className="table w-50">
-                          <tbody>
+                      <table className="table">
+                        <tbody>
+                          <tr>
+                            <td className="fw-bold">Title:</td>
+                            <td>{game.title}</td>
+                          </tr>
+                          <tr>
+                            <td className="fw-bold">System:</td>
+                            <td>{getSystemDisplayName(game.system || 'Unknown')}</td>
+                          </tr>
+                          <tr>
+                            <td className="fw-bold">Release Date:</td>
+                            <td>{formatReleaseDate(game.releaseDate || '')}</td>
+                          </tr>
+                          {game.developer && (
                             <tr>
-                              <td className="fw-bold">Title:</td>
-                              <td>{game.title}</td>
+                              <td className="fw-bold">Developer:</td>
+                              <td>{game.developer}</td>
                             </tr>
+                          )}
+                          {game.publisher && (
                             <tr>
-                              <td className="fw-bold">Console:</td>
-                              <td>{game.console}</td>
+                              <td className="fw-bold">Publisher:</td>
+                              <td>{game.publisher}</td>
                             </tr>
+                          )}
+                          {game.genre && (
                             <tr>
-                              <td className="fw-bold">Release Year:</td>
-                              <td>{game.release_year}</td>
+                              <td className="fw-bold">Genre:</td>
+                              <td>{game.genre}</td>
                             </tr>
-                          </tbody>
-                        </table>
-                        <table className="table w-50">
-                          <tbody>
-                            {game.genre && (
-                              <tr>
-                                <td className="fw-bold">Genre:</td>
-                                <td>{game.genre}</td>
-                              </tr>
-                            )}
-                            {game.rating && (
-                              <tr>
-                                <td className="fw-bold">Rating:</td>
-                                <td>
-                                  {generateStarRating(game.rating)} ({game.rating}/5)
-                                </td>
-                              </tr>
-                            )}
-                            <tr>
-                              <td className="fw-bold">Views:</td>
-                              <td>{game.viewCount || 0}</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
+                          )}
+                          <tr>
+                            <td className="fw-bold">Views:</td>
+                            <td>{game.viewCount || 0}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 </div>
@@ -374,7 +416,7 @@ const GameDetails = () => {
           </div>
 
           <Sidebar
-            consoleData={{ name: game.console, shortName: game.system } as any}
+            consoleData={{ name: getSystemDisplayName(game.system), shortName: game.system } as any}
             games={relatedGames}
             relatedConsoles={[]}
             generateStarRating={generateStarRating}
