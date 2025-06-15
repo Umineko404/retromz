@@ -25,25 +25,40 @@
 </head>
 <body>
   <div id="game"></div>
-
   <script>
     // Parse the `rom` query param
     const urlParams = new URLSearchParams(window.location.search);
     const romPath = urlParams.get("rom");
-
     if (!romPath) {
       document.body.innerHTML = '<p class="error-message">No ROM specified.</p>';
       console.error('No ROM path provided in URL');
       throw new Error('No ROM path provided');
     }
-
+    
     // EmulatorJS configuration
     window.EJS_player = "#game";
     window.EJS_gameUrl = romPath;
     window.EJS_core = detectCoreFromExtension(romPath);
-    window.EJS_pathtodata = "/emulatorjs/data/"; // Ensure this path is correct
+    window.EJS_pathtodata = "/emulatorjs/data/";
+    window.EJS_pathToCores = "/emulatorjs/data/cores/";
     window.EJS_startOnLoad = true;
-
+    
+    // Debug logging
+    console.log('ROM Path:', romPath);
+    console.log('Detected Core:', window.EJS_core);
+    console.log('Data Path:', window.EJS_pathtodata);
+    console.log('Cores Path:', window.EJS_pathToCores);
+    
+    // Test core file accessibility
+    const coreFile = `${window.EJS_pathToCores}${window.EJS_core}.js`;
+    console.log('Looking for core file:', coreFile);
+    fetch(coreFile, { method: 'HEAD' })
+      .then(response => {
+        console.log('Core file accessible:', response.ok);
+        if (!response.ok) console.error('Core file 404:', coreFile);
+      })
+      .catch(e => console.error('Core file fetch error:', e));
+    
     function detectCoreFromExtension(path) {
       const ext = path.split('.').pop()?.toLowerCase();
       switch (ext) {
@@ -53,7 +68,10 @@
         case "gba": return "gba";
         case "gb":
         case "gbc": return "gb";
-        case "n64": return "n64";
+        case "n64":
+        case "z64":   // Added z64 support
+        case "v64":   // Added v64 support
+          return "n64";
         case "bin":
         case "gen":
         case "smd":
@@ -65,7 +83,7 @@
           throw new Error('Unsupported ROM extension: ' + ext);
       }
     }
-
+    
     // Load EmulatorJS with error handling
     try {
       const script = document.createElement('script');
