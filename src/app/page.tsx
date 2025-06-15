@@ -27,19 +27,14 @@ interface GamingSystem {
   image: string;
 }
 
-interface Discussion {
-  title: string;
-  author: string;
-  replies: number;
-  time: string;
-}
-
 export default function HomePage() {
   const { isLoading, progress, loadingTitle, loadingText, theme, toggleTheme, onDataLoad } = useThemeAwareLoader();
   const [user, setUser] = useState<any>(null);
   const [gamingSystems, setGamingSystems] = useState<GamingSystem[]>([]);
   const [popularGames, setPopularGames] = useState<Game[]>([]);
-  const [discussions, setDiscussions] = useState<Discussion[]>([]);
+  const [showForumIframe, setShowForumIframe] = useState(false);
+
+  const forumUrl = 'https://retromzforums.infinityfreeapp.com/';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -85,22 +80,6 @@ export default function HomePage() {
             image: game.coverImageUrl || 'https://via.placeholder.com/300',
           }))
         );
-
-        const discussionsSnapshot = await getDocs(collection(db, 'discussions'));
-        const discussionData = discussionsSnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => b.timestamp?.toDate() - a.timestamp?.toDate())
-          .slice(0, 3);
-        setDiscussions(
-          discussionData.map((disc) => ({
-            title: disc.title,
-            author: disc.author,
-            replies: disc.replies || 0,
-            time: disc.timestamp
-              ? `${Math.floor((new Date().getTime() - disc.timestamp.toDate().getTime()) / (1000 * 3600))} hours ago`
-              : 'N/A',
-          }))
-        );
       } catch (err) {
         console.error('Error fetching data:', err);
       }
@@ -137,8 +116,11 @@ export default function HomePage() {
               <Link href="/games" className="btn btn-primary me-2">
                 <i className="fas fa-gamepad me-2"></i>Play Now
               </Link>
-              <Link href="/profile" className="btn btn-outline-secondary">
+              <Link href="/profile" className="btn btn-outline-secondary me-2">
                 <i className="fas fa-user me-2"></i>View Your Profile
+              </Link>
+              <Link href="/forum" className="btn btn-outline-info">
+                <i className="fas fa-comments me-2"></i>Visit Forum
               </Link>
             </>
           ) : (
@@ -148,13 +130,60 @@ export default function HomePage() {
               <Link href="/games" className="btn btn-primary me-2">
                 <i className="fas fa-gamepad me-2"></i>Play Now
               </Link>
-              <Link href="/community" className="btn btn-outline-secondary">
-                <i className="fas fa-users me-2"></i>Join Community
+              <Link href="/forum" className="btn btn-outline-secondary">
+                <i className="fas fa-comments me-2"></i>Visit Forum
               </Link>
             </>
           )}
         </div>
       </section>
+
+      {/* Forum Iframe Section */}
+      {showForumIframe && (
+        <section className="forum-preview-section py-4 bg-light">
+          <div className="container-fluid">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h3>
+                <i className="fas fa-comments me-2 text-primary-custom"></i>
+                Community Forum
+              </h3>
+              <div>
+                <button 
+                  className="btn btn-sm btn-outline-secondary me-2"
+                  onClick={() => setShowForumIframe(false)}
+                >
+                  <i className="fas fa-times me-1"></i>Close
+                </button>
+                <a 
+                  href={forumUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="btn btn-sm btn-primary"
+                >
+                  <i className="fas fa-external-link-alt me-1"></i>
+                  Open in New Tab
+                </a>
+              </div>
+            </div>
+            <div className="forum-iframe-container">
+              <iframe
+                src={forumUrl}
+                width="100%"
+                height="600"
+                frameBorder="0"
+                title="Community Forum Preview"
+                style={{
+                  border: '1px solid #dee2e6',
+                  borderRadius: '8px'
+                }}
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       <div className="container">
         <div className="row">
           <div className="col-lg-9">
@@ -217,35 +246,51 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
-            <h3 className="mt-5 mb-4">
-              <i className="fas fa-users me-2 text-primary-custom"></i>
-              Community
-            </h3>
-            <div className="card">
-              <div className="card-header">Recent Discussions</div>
-              <div className="card-body">
-                {discussions.map((discussion, index) => (
-                  <div
-                    key={index}
-                    className={`d-flex mb-3 ${index < discussions.length - 1 ? 'pb-3 border-bottom' : ''}`}
-                  >
-                    <div className="flex-grow-1">
-                      <Link href="#" className="fw-semibold text-decoration-none">
-                        {discussion.title}
+
+            <div className="mt-5 mb-4">
+              <h3 className="mb-3">
+                <i className="fas fa-comments me-2 text-primary-custom"></i>
+                Community Forum Preview
+              </h3>
+              <div className="card">
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <h5 className="mb-0">Latest Forum Activity</h5>
+                    <div>
+                      <Link 
+                        href="/forum"
+                        className="btn btn-sm btn-primary me-2"
+                      >
+                        <i className="fas fa-expand me-1"></i>
+                        Full Screen
                       </Link>
-                      <p className="mb-1">
-                        <small>
-                          Started by {discussion.author} | {discussion.replies} replies | {discussion.time}
-                        </small>
-                      </p>
+                      <button 
+                        className="btn btn-sm btn-primary me-2"
+                        onClick={() => setShowForumIframe(!showForumIframe)}
+                      >
+                        {showForumIframe ? 'Hide Preview' : 'Show Preview'}
+                      </button>
                     </div>
                   </div>
-                ))}
-              </div>
-              <div className="card-footer text-end">
-                <Link href="/community" className="btn btn-primary">
-                  View All Discussions
-                </Link>
+                  
+                  {!showForumIframe && (
+                    <div className="forum-preview-small">
+                      <iframe
+                        src={forumUrl}
+                        width="100%"
+                        height="400px"
+                        frameBorder="0"
+                        title="Forum Preview"
+                        style={{
+                          border: '1px solid #dee2e6',
+                          borderRadius: '4px'
+                        }}
+                        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

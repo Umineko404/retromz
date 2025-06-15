@@ -1031,3 +1031,68 @@ p, .lead, li, a:not(.nav-link), .text-muted {
     margin: 20px 0; 
   }
 }
+
+.forum-preview-section {
+  border-top: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.forum-iframe-container {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  transform: scale(0.8);
+  transform-origin: top left;
+}
+
+.forum-iframe-container iframe {
+  width: 125%; /* Compensate for the 0.8 scale */
+  height: 750px; /* Increase height to compensate for scale */
+}
+
+.forum-preview-small {
+  width: 100%;
+  transform: scale(0.8);
+  transform-origin: top left;
+}
+
+.forum-preview-small iframe {
+  width: 125%; /* Compensate for the 0.8 scale */
+  height: 500px; /* Increase height to compensate for scale */
+}
+
+@media (max-width: 768px) {
+  .forum-iframe-container {
+    transform: scale(0.6);
+  }
+
+  .forum-iframe-container iframe {
+    width: 166.67%; /* Compensate for the 0.6 scale */
+    height: 666px;
+  }
+
+  .forum-preview-small {
+    transform: scale(0.6);
+  }
+
+  .forum-preview-small iframe {
+    width: 166.67%;
+    height: 666px;
+  }
+}
+
+
+
+.forum-page {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+}
+
+.forum-page iframe {
+  width: 100%;
+  height: 100%;
+}
