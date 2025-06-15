@@ -13,6 +13,7 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer'; // Import the existing Footer component
 import { useThemeAwareLoader } from '../src/app/hooks/useThemeAwareLoader';
 
 export default function AdminComponent() {
@@ -832,6 +833,7 @@ export default function AdminComponent() {
           )}
         </div>
       </div>
+      <Footer />
     </>
   );
 }
