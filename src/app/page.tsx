@@ -34,7 +34,7 @@ export default function HomePage() {
   const [popularGames, setPopularGames] = useState<Game[]>([]);
   const [showForumIframe, setShowForumIframe] = useState(false);
 
-  const forumUrl = 'https://retromzforums.infinityfreeapp.com/';
+  const forumUrl = `https://retromzforums.infinityfreeapp.com/`;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

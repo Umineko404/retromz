@@ -61,7 +61,7 @@ export default function Navbar() {
 
   const getProfilePicture = () => {
     // Return user's photo URL if available, otherwise use a default avatar
-    return user?.photoURL || '/default-avatar.png';
+    return user?.photoURL;
   };
 
   const getUserDisplayName = () => {
