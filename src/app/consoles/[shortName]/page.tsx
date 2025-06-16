@@ -9,7 +9,8 @@ import { db } from '../../../firebase/firebase';
 import Navbar from '../../../../components/Navbar';
 import Sidebar from '../../../../components/Sidebar';
 import Footer from '../../../../components/Footer';
-import { useThemeAwareLoader } from '../../hooks/useThemeAwareLoader';
+import PacmanLoader from '../../../../components/PacmanLoader';
+import ScrollProgressBar from '../../../../components/ScrollProgressBar';
 
 interface ConsoleData {
   id: string;
@@ -37,12 +38,13 @@ interface Game {
 }
 
 export default function ConsolePage() {
-  const { isLoading, progress, loadingTitle, loadingText, theme, toggleTheme, onDataLoad } = useThemeAwareLoader();
   const [activeTab, setActiveTab] = useState<'about' | 'games'>('about');
   const [consoleData, setConsoleData] = useState<ConsoleData | null>(null);
   const [relatedConsoles, setRelatedConsoles] = useState<ConsoleData[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [theme, setTheme] = useState('dark');
+  const [isLoading, setIsLoading] = useState(true);
   const { shortName } = useParams();
 
   const generateStarRating = (rating: number = 0): JSX.Element[] => {
@@ -65,11 +67,20 @@ export default function ConsolePage() {
     const fetchConsoleData = async () => {
       if (!shortName || typeof shortName !== 'string') {
         setError('Invalid console shortName.');
+	setIsLoading(false);
         return;
       }
 
       try {
-        await onDataLoad(`${shortName} Data`);
+
+        if (typeof window !== 'undefined') {
+          const savedTheme = localStorage.getItem('theme');
+          const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+          setTheme(initialTheme);
+          document.documentElement.setAttribute('data-bs-theme', initialTheme);
+        }
+
         const uppercaseShortName = shortName.toUpperCase();
         const consolesRef = collection(db, 'consoles');
         const q = query(consolesRef, where('shortName', '==', uppercaseShortName));
@@ -120,14 +131,23 @@ export default function ConsolePage() {
           }))
           .filter((game) => game.system === data.shortName);
         setGames(consoleGames);
+	setIsLoading(false);
       } catch (err) {
         console.error('Error fetching console data:', err);
         setError('Failed to load console data: ' + (err as Error).message);
+	setIsLoading(false);
       }
     };
 
     fetchConsoleData();
-  }, [shortName, onDataLoad]);
+  }, [shortName]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-bs-theme', newTheme);
+  };
 
   if (error) {
     return (
@@ -137,24 +157,22 @@ export default function ConsolePage() {
     );
   }
 
-  if (isLoading || !consoleData) {
+  if (isLoading) {
+    return <PacmanLoader message={`Loading ${shortName} Data`} />;
+  }
+
+  if (!consoleData) {
     return (
-      <div className={`loading-overlay ${isLoading ? '' : 'hidden'}`} role="alert" aria-label="Loading console data">
-        <div className="loading-content">
-          <h1 className="loading-title">{loadingTitle}</h1>
-          <div className="loading-spinner"></div>
-          <div className="loading-progress">
-            <div className="loading-progress-bar" style={{ width: `${progress}%` }}></div>
-          </div>
-          <p className="loading-text">{loadingText}</p>
-        </div>
+      <div className="container text-center py-5">
+        <h1 className="text-muted">Console data not found</h1>
       </div>
     );
   }
 
   return (
     <>
-      <Navbar toggleTheme={toggleTheme} theme={theme} />
+      <ScrollProgressBar />
+      <Navbar theme={theme} setTheme={toggleTheme} />
       <div className="hero game-banner">
         <div className="container">
           <div className="row">
@@ -208,7 +226,7 @@ export default function ConsolePage() {
       </div>
       <div className="container">
         <div className="row">
-          <div className="col-lg-8">
+          <div className="col-lg-9">
             <div className="nav-tabs d-flex border-bottom">
               {['about', 'games'].map((tab) => (
                 <button

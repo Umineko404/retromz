@@ -268,7 +268,7 @@ const GameDetails = () => {
 
       <div className="container">
         <div className="row">
-          <div className="col-lg-8">
+          <div className="col-lg-9">
             <div className="nav-tabs d-flex border-bottom">
               {['about', 'gameplay', 'screenshots', 'controls', 'comments'].map((tab) => (
                 <button

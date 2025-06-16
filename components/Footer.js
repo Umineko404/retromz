@@ -8,13 +8,16 @@ export default function Footer() {
       <div className="container">
         <div className="row">
           <div className="col-md-4 mb-4 mb-md-0">
+	  <Link href="/">
             <Image
               src="/retromz-logo.png"
               alt="RETROMZ Logo"
               width={120}
               height={40}
               style={{ objectFit: 'contain' }}
+	      priority
             />
+	  </Link>
             <p className="text-muted">
               The ultimate retro gaming community. Play games, join discussions, and connect with fellow gamers.
             </p>
@@ -36,19 +39,21 @@ export default function Footer() {
           <div className="col-md-2 mb-4 mb-md-0">
             <h6>Quick Links</h6>
             <ul className="list-unstyled">
-              <li><Link href="/" className="nav-link">Home</Link></li>
               <li><Link href="/games" className="nav-link">Games</Link></li>
-              <li><Link href="/forum" className="nav-link">Forum</Link></li>
+	      <li><Link href="/reviews" className="nav-link">Reviews</Link></li>
+              <li><Link href="/forum" className="nav-link">Forums</Link></li>
+              <li><Link href="/requests" className="nav-link">Requests</Link></li>
               <li><Link href="/about" className="nav-link">About</Link></li>
             </ul>
           </div>
           <div className="col-md-2 mb-4 mb-md-0">
-            <h6>Game Systems</h6>
+            <h6>Consoles</h6>
             <ul className="list-unstyled">
-              <li><Link href="/games/nes" className="nav-link">NES</Link></li>
-              <li><Link href="/games/snes" className="nav-link">SNES</Link></li>
-              <li><Link href="/games/n64" className="nav-link">N64</Link></li>
-              <li><Link href="/games/gba" className="nav-link">GBA</Link></li>
+	      <li><Link href="/consoles/gba" className="nav-link">GBA</Link></li>
+	      <li><Link href="/consoles/gb" className="nav-link">GB</Link></li>
+	      <li><Link href="/consoles/gen" className="nav-link">GEN</Link></li>
+	      <li><Link href="/consoles/n64" className="nav-link">N64</Link></li>
+	      <li><Link href="/consoles/nds" className="nav-link">NDS</Link></li>
             </ul>
           </div>
           <div className="col-md-4">

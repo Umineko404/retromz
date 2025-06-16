@@ -8,6 +8,8 @@ import Footer from '../../components/Footer';
 import { auth, db } from '../firebase/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs } from 'firebase/firestore';
+import PacmanLoader from '../../components/PacmanLoader';
+import ScrollProgressBar from '../../components/ScrollProgressBar';
 import { useThemeAwareLoader } from './hooks/useThemeAwareLoader';
 
 interface Game {
@@ -49,63 +51,56 @@ export default function HomePage() {
       try {
         await onDataLoad('Homepage Data');
         const consolesSnapshot = await getDocs(collection(db, 'consoles'));
-        const systems = consolesSnapshot.docs.map((doc) => ({
-          name: doc.data().name,
-          shortName: doc.data().shortName,
-          games: `${doc.data().gamesCount || 0}+ Games`,
-          tooltip: `Browse ${doc.data().gamesCount || 0}+ ${doc.data().name} games`,
-          image: doc.data().imageUrl || `/images/${doc.data().shortName}-Controller-Flat.png`,
-        }));
-        setGamingSystems(systems);
+        const systems = consolesSnapshot.docs
+      .map((doc) => ({
+        name: doc.data().name,
+        shortName: doc.data().shortName,
+        games: `${doc.data().gamesCount || 0} Games`,
+        tooltip: `Browse ${doc.data().gamesCount || 0}+ ${doc.data().name} games`,
+        image: doc.data().imageUrl || `/images/${doc.data().shortName}-Controller-Flat.png`,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .slice(0, 3); 
+      setGamingSystems(systems);
 
-        const gamesSnapshot = await getDocs(collection(db, 'games'));
-        const games = gamesSnapshot.docs
-          .map((doc) => ({
-            id: doc.id,
-            title: doc.data().title,
-            system: doc.data().system || '',
-            console: doc.data().console,
-            playingCount: doc.data().playingCount,
-            coverImageUrl: doc.data().coverImageUrl,
-          }))
-          .sort((a, b) => (b.playingCount || 0) - (a.playingCount || 0))
-          .slice(0, 3);
-        setPopularGames(
-          games.map((game) => ({
-            id: game.id,
-            title: game.title,
-            system: game.system,
-            console: game.console,
-            players: `${game.playingCount || 0} playing`,
-            image: game.coverImageUrl || 'https://via.placeholder.com/300',
-          }))
-        );
-      } catch (err) {
-        console.error('Error fetching data:', err);
-      }
-    };
+      const gamesSnapshot = await getDocs(collection(db, 'games'));
+      const games = gamesSnapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        title: doc.data().title,
+        system: doc.data().system || '',
+        console: doc.data().console,
+        playingCount: doc.data().playingCount,
+        coverImageUrl: doc.data().coverImageUrl,
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title))
+      .slice(0, 3);
+    setPopularGames(
+      games.map((game) => ({
+        id: game.id,
+        title: game.title,
+        system: game.system,
+        console: game.console,
+        players: `${game.playingCount || 0} playing`,
+        image: game.coverImageUrl || 'https://via.placeholder.com/300',
+      }))
+    );
+  } catch (err) {
+    console.error('Error fetching data:', err);
+  }
+};
 
     fetchData();
     return () => unsubscribe();
   }, [onDataLoad]);
 
   if (isLoading) {
-    return (
-      <div className={`loading-overlay ${isLoading ? '' : 'hidden'}`} role="alert" aria-label="Loading homepage data">
-        <div className="loading-content">
-          <h1 className="loading-title">{loadingTitle}</h1>
-          <div className="loading-spinner"></div>
-          <div className="loading-progress">
-            <div className="loading-progress-bar" style={{ width: `${progress}%` }}></div>
-          </div>
-          <p className="loading-text">{loadingText}</p>
-        </div>
-      </div>
-    );
+    return <PacmanLoader message={loadingText || "Loading Homepage Data"} />;
   }
 
   return (
     <>
+      <ScrollProgressBar />
       <Navbar theme={theme} setTheme={toggleTheme} user={user} />
       <section className="hero">
         <div className="container">
@@ -138,7 +133,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Forum Iframe Section */}
       {showForumIframe && (
         <section className="forum-preview-section py-4 bg-light">
           <div className="container-fluid">
@@ -189,7 +183,7 @@ export default function HomePage() {
           <div className="col-lg-9">
             <h3 className="mb-4">
               <i className="fas fa-star me-2 text-primary-custom"></i>
-              Top Gaming Systems
+              Top Consoles
             </h3>
             <div className="row mb-4">
               {gamingSystems.map((system) => (
