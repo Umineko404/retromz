@@ -7,6 +7,8 @@ import Navbar from '../../../../components/Navbar';
 import Sidebar from '../../../../components/Sidebar';
 import Footer from '../../../../components/Footer';
 import EmulatorPlayer from '../../../../components/EmulatorPlayer';
+import PacmanLoader from '../../../../components/PacmanLoader';
+import ScrollProgressBar from '../../../../components/ScrollProgressBar';
 import { db } from '../../../firebase/firebase';
 import { doc, updateDoc, collection, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
@@ -70,13 +72,12 @@ const formatReleaseDate = (dateString: string): string => {
 };
 
 const GameDetails = () => {
-  const { isLoading, progress, loadingTitle, loadingText, onDataLoad } = useThemeAwareLoader();
+  const { isLoading, progress, loadingTitle, loadingText, theme, toggleTheme, onDataLoad } = useThemeAwareLoader();
   const params = useParams();
   const gameTitleParam = params.gameTitle as string | undefined;
   const [game, setGame] = useState<Game | null>(null);
   const [relatedGames, setRelatedGames] = useState<Game[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [activeTab, setActiveTab] = useState<'about' | 'gameplay' | 'screenshots' | 'controls' | 'comments'>('about');
   const [startEmulator, setStartEmulator] = useState(false);
 
@@ -94,25 +95,6 @@ const GameDetails = () => {
       stars.push(<i key={`empty-${i}`} className="far fa-star star-rating icon-glow"></i>);
     }
     return stars;
-  };
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-    setTheme(initialTheme);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-bs-theme', theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => {
-      const newTheme = prevTheme === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('theme', newTheme);
-      return newTheme;
-    });
   };
 
   useEffect(() => {
@@ -190,23 +172,14 @@ const GameDetails = () => {
     );
   }
 
+  // Show PacmanLoader while loading
   if (isLoading || !game) {
-    return (
-      <div className={`loading-overlay ${isLoading ? '' : 'hidden'}`} role="alert" aria-label="Loading game data">
-        <div className="loading-content">
-          <h1 className="loading-title">{loadingTitle}</h1>
-          <div className="loading-spinner"></div>
-          <div className="loading-progress">
-            <div className="loading-progress-bar" style={{ width: `${progress}%` }}></div>
-          </div>
-          <p className="loading-text">{loadingText}</p>
-        </div>
-      </div>
-    );
+    return <PacmanLoader message={loadingText || `Loading ${gameTitleParam?.replace(/-/g, ' ') || 'Game Details'}...`} />;
   }
 
   return (
     <>
+      <ScrollProgressBar />
       <Navbar toggleTheme={toggleTheme} theme={theme} />
 
       <div className="hero game-banner">
