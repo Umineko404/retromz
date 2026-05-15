@@ -43,18 +43,25 @@ pipeline {
         // Stage 3: Containerized Deployment
         stage('Containerized Deployment') {
             steps {
-                echo 'Building Docker image for RetroMZ...'
-                sh 'docker build -t $APP_IMAGE .'
+                echo 'Building Docker image for Retromz...'
+                sh """
+                    docker build -t \$APP_IMAGE \
+                    --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=\$NEXT_PUBLIC_FIREBASE_API_KEY \
+                    --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=\$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN \
+                    --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID=\$NEXT_PUBLIC_FIREBASE_PROJECT_ID \
+                    --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=\$NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET \
+                    --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=\$NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID \
+                    --build-arg NEXT_PUBLIC_FIREBASE_APP_ID=\$NEXT_PUBLIC_FIREBASE_APP_ID \
+                    .
+                """
 
                 echo 'Removing any existing container...'
                 sh 'docker rm -f $CONTAINER_NAME || true'
 
                 echo 'Starting RetroMZ container...'
+                // Rest of your steps...
                 sh 'docker run -d --name $CONTAINER_NAME -p $APP_PORT:3000 $APP_IMAGE'
-
-                echo 'Waiting for app to initialize...'
                 sh 'sleep 10'
-
                 echo 'Containerized Deployment stage complete.'
             }
         }
