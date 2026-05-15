@@ -1,25 +1,22 @@
 pipeline {
     agent any
-
     tools {
         nodejs 'NodeJS-26'
     }
-
     environment {
         APP_IMAGE      = 'retromz-app'
         SELENIUM_IMAGE = 'retromz-selenium'
         CONTAINER_NAME = 'retromz-container'
         APP_PORT       = '3000'
-        NEXT_PUBLIC_FIREBASE_API_KEY           = credentials('FIREBASE_API_KEY')
-        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN       = credentials('FIREBASE_AUTH_DOMAIN')
-        NEXT_PUBLIC_FIREBASE_PROJECT_ID        = credentials('FIREBASE_PROJECT_ID')
-        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET    = credentials('FIREBASE_STORAGE_BUCKET')
+        NEXT_PUBLIC_FIREBASE_API_KEY = credentials('FIREBASE_API_KEY')
+        NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = credentials('FIREBASE_AUTH_DOMAIN')
+        NEXT_PUBLIC_FIREBASE_PROJECT_ID = credentials('FIREBASE_PROJECT_ID')
+        NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET = credentials('FIREBASE_STORAGE_BUCKET')
         NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID = credentials('FIREBASE_MESSAGING_SENDER_ID')
-        NEXT_PUBLIC_FIREBASE_APP_ID            = credentials('FIREBASE_APP_ID')
+        NEXT_PUBLIC_FIREBASE_APP_ID = credentials('FIREBASE_APP_ID')
     }
-
     stages {
-        // Stage 1: Code Build
+        // Stage 1: Code Build 
         stage('Code Build') {
             steps {
                 echo 'Installing npm dependencies...'
@@ -37,7 +34,7 @@ pipeline {
                 echo 'Unit Testing stage complete.'
             }
         }
-        // Stage 3: Containerized Deployment
+        // Stage 3: Containerized Deployment 
         stage('Containerized Deployment') {
             steps {
                 echo 'Building Docker image for RetroMZ...'
@@ -76,6 +73,7 @@ pipeline {
             }
         }
     }
+
 
     post {
         always {
